@@ -1,0 +1,113 @@
+/* styles.css */
+
+/* Градиентный фон, как в StartPage.vue */
+.gradient-bg {
+    background: radial-gradient(circle at top, #1b2838, #0f1a27 80%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Основной контейнер */
+  .main-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    max-width: 1200px;
+    width: 100%;
+  }
+  
+  /* Стили для панели аннотаций */
+  .annotation-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  
+  .annotation-btn {
+    background-color: #ffffff;
+    color: #223748;
+    font-weight: bold;
+    text-transform: uppercase;
+    padding: 12px;
+    border-radius: 12px;
+    transition: transform 0.3s ease;
+    width: 180px;
+  }
+  
+  .annotation-btn:hover {
+    background-color: #f4f4f4;
+    transform: scale(1.05);
+  }
+  
+  .annotation-btn.active {
+    box-shadow: 0 0 15px #000000a5;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+  }
+  
+  /* Стили для CanvasEditor и основного блока */
+  .card-style {
+    border-radius: 16px;
+    background: #223748;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  }
+  
+  .markup-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+    padding: 24px;
+  }
+  
+  .canvas-editor {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .start-btn {
+    background-color: #3a7e9f;
+    color: #ffffff;
+    font-weight: bold;
+    text-transform: uppercase;
+    padding: 14px 28px;
+    border-radius: 30px;
+    transition: all 0.3s ease-in-out;
+    width: 100%;
+  }
+  
+  .start-btn:hover {
+    background-color: #336b87;
+    transform: scale(1.05);
+  }
+  
+  .send-btn {
+    background-color: #3a7e9f;
+    color: #ffffff;
+    font-weight: bold;
+    text-transform: uppercase;
+    padding: 14px 28px;
+    border-radius: 30px;
+    transition: all 0.3s ease-in-out;
+    width: 100%;
+    max-width: 300px;
+    margin-top: 5px;
+  }
+  
+  .send-btn:hover {
+    background-color: #336b87;
+    transform: scale(1.05);
+  }
+  
+  .image-canvas {
+    border: 2px dashed #ccc;
+    background-color: #000;
+    width: 500px;
+    height: 500px;
+  }
+  
