@@ -2,6 +2,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import StartPage from '../pages/StartPage.vue'
 import MarkupPage from '../pages/MarkupPage.vue'
+import ProjectDashboard from '../pages/ProjectDashboard.vue'
 
 const routes = [
   {
@@ -13,6 +14,11 @@ const routes = [
     path: '/markup',
     name: 'MarkupPage',
     component: MarkupPage
+  },
+  {
+    path: '/projects',
+    name: 'ProjectDashboard',
+    component: ProjectDashboard
   }
 ]
 

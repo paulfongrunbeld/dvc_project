@@ -18,7 +18,7 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 
 const startWork = () => {
-  router.push({ name: 'MarkupPage' })
+  router.push({ name: 'ProjectDashboard' })
 }
 </script>
 
