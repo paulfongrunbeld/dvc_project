@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
+import vuetify from 'vite-plugin-vuetify';
 import { fileURLToPath, URL } from 'node:url'; // Для работы с путями
 import { VitePWA } from 'vite-plugin-pwa'; // Опционально: PWA
 import { visualizer } from 'rollup-plugin-visualizer'; // Опционально: анализ сборки
@@ -11,6 +12,7 @@ export default defineConfig({
   // Плагины
   plugins: [
     vue(), // Поддержка Vue
+    vuetify({ autoImport: true }), // Автоимпорт компонентов Vuetify
     VitePWA({ // Опционально: PWA
       registerType: 'autoUpdate',
       manifest: {

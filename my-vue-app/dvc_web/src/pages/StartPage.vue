@@ -1,5 +1,5 @@
 <template>
-  <v-container class="fill-height gradient-bg d-flex align-center justify-center">
+  <v-container class="fill-height gradient-bg d-flex align-center justify-center" fluid>
     <v-card class="pa-6 card-style" elevation="10">
       <v-card-text class="content">
         <h2 class="title">Добро пожаловать!</h2>

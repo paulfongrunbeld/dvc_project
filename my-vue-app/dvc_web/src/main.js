@@ -1,17 +1,18 @@
-// src/main.js
-import { createApp } from 'vue'
-import App from './App.vue'
+import { createApp } from 'vue';
+import App from './App.vue';
+import router from './router'; // Если используется Vue Router
+import { createVuetify } from 'vuetify';
+import 'vuetify/styles'; // Стили Vuetify
 
-// Импорт плагинов
-import router from './router'
-import vuetify from './plugins/vuetify'
+// Создаем экземпляр Vuetify
+const vuetify = createVuetify();
 
-// Если есть глобальные стили или скрипты, их можно подключить здесь
-import './assets/global.css'
+// Создаем приложение Vue
+const app = createApp(App);
 
-const app = createApp(App)
+// Подключаем плагины
+app.use(router); // Если используется Vue Router
+app.use(vuetify);
 
-app.use(router)
-app.use(vuetify)
-
-app.mount('#app')
+// Монтируем приложение
+app.mount('#app');

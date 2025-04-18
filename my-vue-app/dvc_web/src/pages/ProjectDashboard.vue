@@ -13,7 +13,6 @@
           <div class="project-card-header">
             <h3>{{ project.name }}</h3>
             <div class="project-info">
-              <p class="task-type">Тип задачи: {{ project.taskType }}</p>
               <p class="created-at">Создан: {{ formatDate(project.createdAt) }}</p>
             </div>
             <div class="project-actions">
@@ -26,33 +25,94 @@
         </div>
       </div>
 
+
+
+      <v-dialog v-model="showCreateMarkupModal" max-width="600">
+  <v-card>
+    <v-card-title class="d-flex justify-space-between align-center">
+      <span>Создать новую версию</span>
+      <v-btn icon @click="closeCreateMarkupModal">
+        <v-icon>mdi-close</v-icon>
+      </v-btn>
+    </v-card-title>
+
+    <v-card-text>
+      <v-form ref="createMarkupForm" @submit.prevent="createMarkup">
+        <v-text-field
+          v-model="newMarkup.name"
+          label="Название версии"
+          required
+          :rules="[v => !!v || 'Обязательное поле']"
+        ></v-text-field>
+
+        <v-textarea
+          v-model="newMarkup.description"
+          label="Описание версии"
+          required
+          :rules="[v => !!v || 'Обязательное поле']"
+        ></v-textarea>
+
+        <v-btn type="submit" class="action-btn" block>Создать</v-btn>
+      </v-form>
+    </v-card-text>
+  </v-card>
+</v-dialog>
+
+        <v-dialog v-model="showMarkupModal" max-width="600">
+    <v-card>
+      <v-card-title class="d-flex justify-space-between align-center">
+        <span>Версии разметок</span>
+        <v-btn icon @click="closeMarkupModal">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+        <v-btn class="action-btn" @click="openCreateMarkupModal">Создать версию</v-btn>
+      </v-card-title>
+
+      <v-card-text>
+        <div v-for="version in currentMarkups" :key="version.id" class="markup-item">
+          <h4>{{ version.name }}</h4>
+          <p>{{ version.description }}</p>
+          <div class="markup-actions">
+            <v-btn class="action-btn" @click="goToMarkup(version)">Перейти</v-btn>
+            <v-btn class="action-btn" @click="editMarkup(version)">Редактировать</v-btn>
+            <v-btn class="action-btn" @click="deleteMarkup(version.id)">Удалить</v-btn>
+          </div>
+        </div>
+      </v-card-text>
+    </v-card>
+  </v-dialog>
+
+      <!-- Модальное окно -->
       <v-dialog v-model="showCreateModal" max-width="600">
         <v-card>
           <v-card-title class="d-flex justify-space-between align-center">
-            <span>Создать новый проект</span>
+            <span>{{ editingProject ? 'Редактировать проект' : 'Создать новый проект' }}</span>
             <v-btn icon @click="closeCreateProjectModal">
               <v-icon>mdi-close</v-icon>
             </v-btn>
           </v-card-title>
 
           <v-card-text>
-            <v-form ref="createForm">
-              <v-text-field v-model="newProject.name" label="Название проекта" required
-                :rules="[v => !!v || 'Обязательное поле']"></v-text-field>
+            <v-form ref="createForm" @submit.prevent="createOrUpdateProject">
+              <v-text-field
+                v-model="newProject.name"
+                label="Название проекта"
+                required
+                :rules="[v => !!v || 'Обязательное поле']"
+              ></v-text-field>
 
-              <v-select v-model="newProject.taskType" :items="taskTypes" label="Тип задачи" required
-                :rules="[v => !!v || 'Обязательное поле']"></v-select>
+              <v-textarea
+                v-model="newProject.description"
+                label="Описание проекта"
+                required
+                :rules="[v => !!v || 'Обязательное поле']"
+              ></v-textarea>
 
-              <v-textarea v-model="newProject.description" label="Описание проекта" required
-                :rules="[v => !!v || 'Обязательное поле']"></v-textarea>
+              <v-btn type="submit" class="action-btn" block>
+                {{ editingProject ? 'Сохранить' : 'Создать' }}
+              </v-btn>
             </v-form>
           </v-card-text>
-
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="error" @click="closeCreateProjectModal">Отмена</v-btn>
-            <v-btn color="primary" @click="createProject">Создать</v-btn>
-          </v-card-actions>
         </v-card>
       </v-dialog>
     </div>
@@ -60,66 +120,127 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, watch } from 'vue';
+
+const createMarkupForm = ref(null);
+
+// Открытие модального окна
+const openCreateMarkupModal = () => {
+  newMarkup.value = { name: '', description: '' }; // Очищаем форму
+  showCreateMarkupModal.value = true;
+};
+
+// Закрытие модального окна
+const closeCreateMarkupModal = () => {
+  showCreateMarkupModal.value = false;
+};
+
+const createMarkup = async () => {
+  const { valid } = await createMarkupForm.value.validate();
+
+  if (valid) {
+    const projectId = currentProjectId.value; // ID текущего проекта
+    const projectMarkups = markups.value.find((m) => m.projectId === projectId);
+
+    if (projectMarkups) {
+      const newId = projectMarkups.versions.length + 1;
+      projectMarkups.versions.push({
+        id: newId,
+        name: newMarkup.value.name,
+        description: newMarkup.value.description,
+      });
+    } else {
+      markups.value.push({
+        projectId,
+        versions: [
+          {
+            id: 1,
+            name: newMarkup.value.name,
+            description: newMarkup.value.description,
+          },
+        ],
+      });
+    }
+
+    closeCreateMarkupModal();
+  }
+};
+
+const currentProjectId = ref(null);
 
 const projects = ref([
   {
     id: 1,
     name: 'Проект 1',
-    taskType: 'Исследовательский',
     createdAt: '2023-05-15T10:00:00Z',
-    description: 'Длинное описание проекта 1. Этот проект связан с исследовательскими задачами, где требуется большой объем анализа и создания научных отчетов.',
+    description: 'Длинное описание проекта 1.',
   },
   {
     id: 2,
     name: 'Проект 2',
-    taskType: 'Разработка',
     createdAt: '2023-06-20T14:30:00Z',
-    description: 'Длинное описание проекта 2. Этот проект посвящен разработке программного обеспечения, с акцентом на новые технологии и улучшение пользовательского опыта.',
-  },
-  {
-    id: 3,
-    name: 'Проект 3',
-    taskType: 'Тестирование',
-    createdAt: '2023-07-25T09:45:00Z',
-    description: 'Длинное описание проекта 3. В этом проекте необходимо провести тестирование различных функций системы для обеспечения высокого качества продукта.',
+    description: 'Длинное описание проекта 2.',
   },
 ]);
 
-const router = useRouter();
+const markups = ref([
+  {
+    projectId: 1,
+    versions: [
+      { id: 1, name: 'Версия 1', description: 'Описание первой версии' },
+      { id: 2, name: 'Версия 2', description: 'Описание второй версии' },
+    ],
+  },
+  {
+    projectId: 2,
+    versions: [
+      { id: 3, name: 'Версия 1', description: 'Описание первой версии' },
+    ],
+  },
+]);
+
 const showCreateModal = ref(false);
 const createForm = ref(null);
-const taskTypes = ['Исследовательский', 'Разработка', 'Тестирование', 'Другое'];
+const editingProject = ref(null);
 
+const showMarkupModal = ref(false);
+const currentMarkups = ref([]);
+
+// Новый проект
 const newProject = ref({
   name: '',
-  taskType: '',
   description: '',
 });
 
+// Открытие модального окна для создания проекта
 const openCreateProjectModal = () => {
+  editingProject.value = null; // Сбрасываем состояние редактирования
+  newProject.value = { name: '', description: '' }; // Очищаем форму
   showCreateModal.value = true;
 };
 
-const closeCreateProjectModal = () => {
-  showCreateModal.value = false;
-  newProject.value = { name: '', taskType: '', description: '' };
-  createForm.value?.resetValidation();
+const showCreateMarkupModal = ref(false);
+const newMarkup = ref({
+  name: '',
+  description: '',
+});
+
+// Открытие модального окна для редактирования проекта
+const editProject = (id) => {
+  const project = projects.value.find((p) => p.id === id);
+  if (project) {
+    editingProject.value = { ...project }; // Копируем данные проекта
+    newProject.value = { ...project }; // Заполняем форму данными проекта
+    showCreateModal.value = true;
+  }
 };
 
-const createProject = async () => {
-  const { valid } = await createForm.value.validate();
-
-  if (valid) {
-    projects.value.push({
-      id: projects.value.length + 1,
-      ...newProject.value,
-      createdAt: new Date().toISOString(),
-    });
-
-    closeCreateProjectModal();
-  }
+// Закрытие модального окна
+const closeCreateProjectModal = () => {
+  showCreateModal.value = false;
+  newProject.value = { name: '', description: '' };
+  editingProject.value = null;
+  createForm.value?.resetValidation();
 };
 
 // Форматирование даты для отображения
@@ -128,18 +249,79 @@ const formatDate = (date) => {
   return new Date(date).toLocaleDateString(undefined, options);
 };
 
-// Навигация к просмотру проекта
-const viewProject = (id) => {
-  router.push({ name: 'ProjectDetails', params: { id } });
+// Создание или обновление проекта
+const createOrUpdateProject = async () => {
+  const { valid } = await createForm.value.validate();
+
+  if (valid) {
+    if (editingProject.value) {
+      // Обновление существующего проекта
+      const index = projects.value.findIndex((p) => p.id === editingProject.value.id);
+      if (index !== -1) {
+        projects.value[index] = { ...projects.value[index], ...newProject.value };
+      }
+    } else {
+      // Создание нового проекта
+      const newId = projects.value.length + 1;
+      projects.value.push({
+        id: newId,
+        name: newProject.value.name,
+        description: newProject.value.description,
+        createdAt: new Date().toISOString(),
+      });
+    }
+
+    closeCreateProjectModal();
+  }
 };
 
-// Функции для редактирования и удаления проекта (пока заглушки)
-const editProject = (id) => {
-  console.log('Редактировать проект', id);
-};
-
+// Удаление проекта
 const deleteProject = (id) => {
-  console.log('Удалить проект', id);
+  projects.value = projects.value.filter((p) => p.id !== id);
+};
+
+// Навигация к просмотру проекта (заглушка)
+const viewProject = (id) => {
+  currentProjectId.value = id;
+  const projectMarkups = markups.value.find((m) => m.projectId === id)?.versions || [];
+  currentMarkups.value = projectMarkups;
+  showMarkupModal.value = true;
+};
+
+// Автоматическое заполнение формы при редактировании
+watch(editingProject, (newVal) => {
+  if (newVal) {
+    newProject.value = { ...newVal }; // Заполняем форму данными редактируемого проекта
+  }
+});
+
+// Перейти к версии (заглушка)
+const goToMarkup = (version) => {
+  console.log('Перейти к версии:', version);
+};
+
+// Редактировать версию (заглушка)
+const editMarkup = (version) => {
+  console.log('Редактировать версию:', version);
+};
+
+// Удалить версию
+const deleteMarkup = (id) => {
+  const projectIndex = markups.value.findIndex((m) =>
+    m.versions.some((v) => v.id === id)
+  );
+  if (projectIndex !== -1) {
+    markups.value[projectIndex].versions = markups.value[
+      projectIndex
+    ].versions.filter((v) => v.id !== id);
+    currentMarkups.value = markups.value[projectIndex].versions;
+  }
+};
+
+// Закрыть модальное окно
+const closeMarkupModal = () => {
+  showMarkupModal.value = false;
+  currentMarkups.value = [];
 };
 </script>
 
@@ -179,9 +361,7 @@ const deleteProject = (id) => {
   width: 100%;
   align-items: center;
   max-height: 600px;
-  /* Ограничиваем высоту списка проектов */
   overflow-y: auto;
-  /* Добавляем вертикальный скроллер */
 }
 
 .project-card {
@@ -202,23 +382,6 @@ const deleteProject = (id) => {
   align-items: flex-start;
   color: #ffffff;
   gap: 20px;
-}
-
-.project-info {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.project-card-header h3 {
-  margin: 0;
-  font-size: 1.5rem;
-  color: #ffffff;
-}
-
-.task-type {
-  font-size: 1rem;
-  color: #f4f4f4;
 }
 
 .created-at {
@@ -255,7 +418,6 @@ const deleteProject = (id) => {
   background-color: #336b87;
 }
 
-.action-btn,
 .action-btn {
   background-color: #3a7e9f;
   color: white;
@@ -267,7 +429,6 @@ const deleteProject = (id) => {
   transition: background-color 0.3s ease;
 }
 
-.action-btn:hover,
 .action-btn:hover {
   background-color: #336b87;
 }
@@ -278,8 +439,5 @@ const deleteProject = (id) => {
   padding: 16px 24px;
 }
 
-.v-card-actions {
-  padding: 16px 24px;
-  background-color: #f5f5f5;
-}
+
 </style>
