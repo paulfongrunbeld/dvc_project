@@ -30,14 +30,14 @@
       <v-dialog v-model="showCreateMarkupModal" max-width="600">
   <v-card>
     <v-card-title class="d-flex justify-space-between align-center">
-      <span>Создать новую версию</span>
+      <span>{{ editingMarkup ? 'Редактировать версию' : 'Создать новую версию' }}</span>
       <v-btn icon @click="closeCreateMarkupModal">
         <v-icon>mdi-close</v-icon>
       </v-btn>
     </v-card-title>
 
     <v-card-text>
-      <v-form ref="createMarkupForm" @submit.prevent="createMarkup">
+      <v-form ref="createMarkupForm" @submit.prevent="createOrUpdateMarkup">
         <v-text-field
           v-model="newMarkup.name"
           label="Название версии"
@@ -52,7 +52,9 @@
           :rules="[v => !!v || 'Обязательное поле']"
         ></v-textarea>
 
-        <v-btn type="submit" class="action-btn" block>Создать</v-btn>
+        <v-btn type="submit" class="action-btn" block>
+          {{ editingMarkup ? 'Сохранить' : 'Создать' }}
+        </v-btn>
       </v-form>
     </v-card-text>
   </v-card>
@@ -123,6 +125,7 @@
 import { ref, watch } from 'vue';
 
 const createMarkupForm = ref(null);
+const editingMarkup = ref(null);
 
 // Открытие модального окна
 const openCreateMarkupModal = () => {
@@ -130,36 +133,39 @@ const openCreateMarkupModal = () => {
   showCreateMarkupModal.value = true;
 };
 
-// Закрытие модального окна
 const closeCreateMarkupModal = () => {
   showCreateMarkupModal.value = false;
+  newMarkup.value = { name: '', description: '' };
+  editingMarkup.value = null;
+  createMarkupForm.value?.resetValidation();
 };
 
-const createMarkup = async () => {
+const createOrUpdateMarkup = async () => {
   const { valid } = await createMarkupForm.value.validate();
 
   if (valid) {
-    const projectId = currentProjectId.value; // ID текущего проекта
-    const projectMarkups = markups.value.find((m) => m.projectId === projectId);
+    const projectId = currentProjectId.value;
+    const project = markups.value.find(m => m.projectId === projectId);
 
-    if (projectMarkups) {
-      const newId = projectMarkups.versions.length + 1;
-      projectMarkups.versions.push({
+    if (editingMarkup.value) {
+      // Редактирование
+      const index = project.versions.findIndex(v => v.id === editingMarkup.value.id);
+      project.versions[index] = { ...newMarkup.value };
+      editingMarkup.value = null; // Сброс
+    } else {
+      // Создание
+      const newId = project ? project.versions.length + 1 : 1;
+      const newVersion = {
         id: newId,
         name: newMarkup.value.name,
         description: newMarkup.value.description,
-      });
-    } else {
-      markups.value.push({
-        projectId,
-        versions: [
-          {
-            id: 1,
-            name: newMarkup.value.name,
-            description: newMarkup.value.description,
-          },
-        ],
-      });
+      };
+      
+      if (project) {
+        project.versions.push(newVersion);
+      } else {
+        markups.value.push({ projectId, versions: [newVersion] });
+      }
     }
 
     closeCreateMarkupModal();
@@ -300,9 +306,10 @@ const goToMarkup = (version) => {
   console.log('Перейти к версии:', version);
 };
 
-// Редактировать версию (заглушка)
 const editMarkup = (version) => {
-  console.log('Редактировать версию:', version);
+  editingMarkup.value = { ...version }; // Сохраняем копию версии
+  newMarkup.value = { ...version }; // Заполняем форму
+  showCreateMarkupModal.value = true; // Открываем форму
 };
 
 // Удалить версию
