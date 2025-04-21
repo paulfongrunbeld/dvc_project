@@ -24,13 +24,13 @@
   <script setup>
   import { ref, onMounted, defineExpose, defineProps } from 'vue';
   
-  // Принимаем текущий тип аннотации из родителя через пропс
   const props = defineProps({
-    currentType: {
-      type: String,
-      default: null,
-    },
-  });
+  currentType: String,
+  availableTypes: {
+    type: Array,
+    default: () => []
+  }
+});
   
   const canvasSize = 500;
   

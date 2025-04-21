@@ -84,6 +84,54 @@
     </v-card>
   </v-dialog>
 
+  <v-dialog v-model="showMarkupFieldsModal" max-width="800">
+  <v-card>
+    <v-card-title class="d-flex justify-space-between align-center">
+      <span>Управление полями разметки</span>
+      <v-btn icon @click="showMarkupFieldsModal = false">
+        <v-icon>mdi-close</v-icon>
+      </v-btn>
+    </v-card-title>
+
+    <v-card-text>
+      <div class="field-management">
+        <!-- Поле для добавления новых элементов -->
+        <div class="add-field-section">
+          <v-text-field
+            v-model="newFieldName"
+            label="Новое поле"
+            @keyup.enter="addField"
+          ></v-text-field>
+          <v-btn class="action-btn" @click="addField">Добавить поле</v-btn>
+        </div>
+
+        <!-- Список существующих полей -->
+        <div class="fields-list">
+          <div v-for="(field, index) in currentMarkupFields" :key="index" class="field-item">
+            <span>{{ field }}</span>
+            <v-btn
+              icon
+              color="error"
+              @click="removeField(index)"
+            >
+              <v-icon>mdi-delete</v-icon>
+            </v-btn>
+          </div>
+        </div>
+
+        <!-- Кнопка выбора -->
+        <v-btn 
+          class="action-btn choose-btn"
+          block
+          @click="saveAndClose"
+        >
+          Выбрать
+        </v-btn>
+      </div>
+    </v-card-text>
+  </v-card>
+</v-dialog>
+
       <!-- Модальное окно -->
       <v-dialog v-model="showCreateModal" max-width="600">
         <v-card>
@@ -123,6 +171,57 @@
 
 <script setup>
 import { ref, watch } from 'vue';
+
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+const showMarkupFieldsModal = ref(false);
+const currentMarkupFields = ref([]);
+const newFieldName = ref('');
+const selectedMarkupVersion = ref(null);
+
+// В методе goToMarkup:
+const goToMarkup = (version) => {
+  selectedMarkupVersion.value = version;
+  currentMarkupFields.value = version.fields ? [...version.fields] : [];
+  showMarkupFieldsModal.value = true;
+};
+
+// Новые методы для работы с полями
+const addField = () => {
+  if (newFieldName.value.trim()) {
+    currentMarkupFields.value.push(newFieldName.value.trim());
+    newFieldName.value = '';
+  }
+};
+
+const removeField = (index) => {
+  currentMarkupFields.value.splice(index, 1);
+};
+
+const saveAndClose = () => {
+  // Сохраняем поля в выбранную версию
+  const projectMarkups = markups.value.find(m => m.projectId === currentProjectId.value);
+  if (projectMarkups) {
+    const versionIndex = projectMarkups.versions.findIndex(v => v.id === selectedMarkupVersion.value.id);
+    if (versionIndex !== -1) {
+      projectMarkups.versions[versionIndex].fields = [...currentMarkupFields.value];
+    }
+  }
+  
+  // Переход на страницу разметки с передачей параметров
+  router.push({
+    name: 'MarkupPage',
+    query: {
+      projectId: currentProjectId.value,
+      versionId: selectedMarkupVersion.value.id,
+      fields: JSON.stringify(currentMarkupFields.value)
+    }
+  });
+  
+  showMarkupFieldsModal.value = false;
+};
 
 const createMarkupForm = ref(null);
 const editingMarkup = ref(null);
@@ -193,14 +292,29 @@ const markups = ref([
   {
     projectId: 1,
     versions: [
-      { id: 1, name: 'Версия 1', description: 'Описание первой версии' },
-      { id: 2, name: 'Версия 2', description: 'Описание второй версии' },
+      { 
+        id: 1, 
+        name: 'Версия 1', 
+        description: 'Описание первой версии',
+        fields: ['Кошка', 'Собака', 'Птица']
+      },
+      { 
+        id: 2, 
+        name: 'Версия 2', 
+        description: 'Описание второй версии',
+        fields: ['Автомобиль', 'Велосипед']
+      },
     ],
   },
   {
     projectId: 2,
     versions: [
-      { id: 3, name: 'Версия 1', description: 'Описание первой версии' },
+      { 
+        id: 3, 
+        name: 'Версия 1', 
+        description: 'Описание первой версии',
+        fields: ['Дерево', 'Цветок']
+      },
     ],
   },
 ]);
@@ -301,10 +415,7 @@ watch(editingProject, (newVal) => {
   }
 });
 
-// Перейти к версии (заглушка)
-const goToMarkup = (version) => {
-  console.log('Перейти к версии:', version);
-};
+
 
 const editMarkup = (version) => {
   editingMarkup.value = { ...version }; // Сохраняем копию версии
@@ -444,6 +555,48 @@ const closeMarkupModal = () => {
   background-color: #223748;
   color: white !important;
   padding: 16px 24px;
+}
+
+.field-management {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.add-field-section {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.fields-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 10px;
+  background: #223748;
+  border-radius: 8px;
+}
+
+.field-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: #2a4055;
+  border-radius: 6px;
+  color: white;
+}
+
+.choose-btn {
+  margin-top: 20px;
+  background-color: #4CAF50 !important;
+}
+
+.choose-btn:hover {
+  background-color: #45a049 !important;
 }
 
 

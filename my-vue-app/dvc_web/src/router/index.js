@@ -1,4 +1,3 @@
-// src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
 import StartPage from '../pages/StartPage.vue'
 import MarkupPage from '../pages/MarkupPage.vue'
@@ -13,7 +12,12 @@ const routes = [
   {
     path: '/markup',
     name: 'MarkupPage',
-    component: MarkupPage
+    component: MarkupPage,
+    props: (route) => ({ // Добавляем передачу параметров
+      projectId: route.query.projectId,
+      versionId: route.query.versionId,
+      fields: route.query.fields ? JSON.parse(route.query.fields) : []
+    })
   },
   {
     path: '/projects',
