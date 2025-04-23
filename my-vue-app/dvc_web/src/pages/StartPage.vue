@@ -1,19 +1,60 @@
 <template>
-  <v-container class="fill-height gradient-bg d-flex align-center justify-center" fluid>
-    <v-card class="pa-6 card-style" elevation="10">
-      <v-card-text class="content">
-        <h2 class="title">Добро пожаловать!</h2>
-        <p class="subtitle">
-          Нажмите кнопку ниже, чтобы начать работу.
-        </p>
-        <v-btn class="start-btn" @click="startWork">Начать</v-btn>
-      </v-card-text>
-    </v-card>
+  <v-container class="fill-height d-flex align-center justify-center" fluid>
+    <!-- Заголовок -->
+    <h1 class="header">Система контроля версий графических данных</h1>
+
+    <!-- Контейнер для карточек -->
+    <div class="cards-container">
+      <!-- Первая карточка -->
+      <v-card class="pa-6 card-style" elevation="3">
+        <v-card-text class="content">
+          <!-- Иконка -->
+          <svg-icon type="mdi" :path="mdiImageFilterNone" class="icon"></svg-icon>
+
+          <!-- Заголовок -->
+          <h2 class="title">Галлерея</h2>
+
+          <!-- Подзаголовок -->
+          <p class="subtitle">
+            Загруженные изображения с их аннотированными версиями
+          </p>
+
+          <!-- Кнопка -->
+          <v-btn class="start-btn" @click="startWork">
+            Перейти
+          </v-btn>
+        </v-card-text>
+      </v-card>
+
+      <!-- Вторая карточка -->
+      <v-card class="pa-6 card-style" elevation="3">
+        <v-card-text class="content">
+          <!-- Иконка -->
+          <svg-icon type="mdi" :path="mdiListBoxOutline" class="icon"></svg-icon>
+
+          <!-- Заголовок -->
+          <h2 class="title">Проекты</h2>
+
+          <!-- Подзаголовок -->
+          <p class="subtitle">
+            Доска с проектами, содержащими версии разметок
+          </p>
+
+          <!-- Кнопка -->
+          <v-btn class="start-btn" @click="startWork">
+            Перейти
+          </v-btn>
+        </v-card-text>
+      </v-card>
+    </div>
   </v-container>
 </template>
 
 <script setup>
 import { useRouter } from 'vue-router'
+import SvgIcon from '@jamescoyle/vue-icon'
+import { mdiImageFilterNone } from '@mdi/js'
+import { mdiListBoxOutline } from '@mdi/js';
 
 const router = useRouter()
 
@@ -23,24 +64,49 @@ const startWork = () => {
 </script>
 
 <style scoped>
-/* Градиентный фон с глубиной */
-.gradient-bg {
-  background: radial-gradient(circle at top, #1b2838, #0f1a27 80%);
+/* Фон */
+.fill-height {
+  background: linear-gradient(135deg, #f9f9f9, #eaeaea);
   min-height: 100vh;
   display: flex;
+  flex-direction: column; /* Изменено на колонку */
   align-items: center;
   justify-content: center;
 }
 
+/* Заголовок */
+.header {
+  font-size: 28px;
+  font-weight: 600;
+  color: #444444; /* Темно-серый */
+  margin-bottom: 44px; /* Отступ между заголовком и карточками */
+  text-align: center;
+  transition: transform 0.3s ease-in-out; /* Анимация увеличения */
+}
+
+/* Анимация заголовка при наведении */
+.header:hover {
+  transform: scale(1.05); /* Легкое увеличение */
+}
+
+/* Контейнер для карточек */
+.cards-container {
+  display: flex;
+  gap: 24px; /* Промежуток между карточками */
+  justify-content: center; /* Выравнивание по центру */
+  width: 100%;
+  max-width: 900px; /* Ограничение ширины контейнера */
+}
+
 /* Карточка */
 .card-style {
-  border-radius: 16px;
-  background: #223748;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
   width: 100%;
-  max-width: 420px;
+  max-width: 400px; /* Максимальная ширина каждой карточки */
   text-align: center;
-  padding: 24px;
+  padding: 32px;
 }
 
 /* Контейнер */
@@ -48,43 +114,53 @@ const startWork = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
 }
 
-/* Заголовок */
+/* Иконка */
+.icon {
+  width: 48px;
+  height: 48px;
+  color: #cccccc; /* Светло-серый */
+}
+
+/* Заголовок внутри карточки */
 .title {
-  font-size: 26px;
-  font-weight: bold;
-  color: #e0e4e8;
-  margin-bottom: 8px;
+  font-size: 24px;
+  font-weight: 600;
+  color: #444444; /* Темно-серый */
+  margin-bottom: 10px;
 }
 
 /* Подзаголовок */
 .subtitle {
-  font-size: 16px;
-  color: #b0b6bb;
+  font-size: 14px;
+  color: #888888; /* Средне-серый */
   margin-bottom: 16px;
 }
 
 /* Кнопка */
 .start-btn {
-  background: #3a7e9f; /* Более тёмный оттенок синего */
+  background: #444444; /* Темно-серый */
   color: #ffffff; /* Белый текст */
-  font-weight: bold;
-  text-transform: uppercase;
-  padding: 14px 28px;
-  border-radius: 30px;
+  font-weight: 600;
+  text-transform: none;
+  padding: 12px 24px;
+  border-radius: 8px;
   transition: all 0.3s ease-in-out;
   width: 100%;
-  max-width: 220px;
-  font-size: 16px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  max-width: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Выравнивание текста по центру */
+  gap: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
 /* Анимация при наведении */
 .start-btn:hover {
-  background: #336b87; /* Ещё более тёмный оттенок синего */
+  background: #333333; /* Чуть темнее серый */
   transform: translateY(-2px);
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 </style>
