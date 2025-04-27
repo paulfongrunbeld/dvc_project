@@ -30,9 +30,7 @@
         <v-card>
           <v-card-title class="d-flex justify-space-between align-center">
             <span>{{ editingProject ? 'Редактировать проект' : 'Создать новый проект' }}</span>
-            <v-btn icon @click="closeCreateProjectModal">
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
+            <v-btn class="close-btn" @click="closeCreateProjectModal">Закрыть</v-btn>
           </v-card-title>
           <v-card-text>
             <v-form ref="createForm" @submit.prevent="createOrUpdateProject">
@@ -59,39 +57,44 @@
       </v-dialog>
 
       <!-- Модальное окно "Версии разметок" -->
-      <v-dialog v-model="showMarkupModal" max-width="600">
-        <v-card>
-          <v-card-title class="d-flex justify-space-between align-center">
-            <span>Версии разметок</span>
-            <v-btn icon @click="closeMarkupModal">
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
-          </v-card-title>
-          <v-card-text>
-            <div v-for="version in currentMarkups" :key="version.id" class="markup-item">
-              <h4>{{ version.name }}</h4>
-              <p>{{ version.description }}</p>
-              <div class="markup-actions">
-                <v-btn class="action-btn" @click="goToMarkup(version)">Перейти</v-btn>
-                <v-btn class="action-btn" @click="editMarkup(version)">Редактировать</v-btn>
-                <v-btn class="action-btn" @click="deleteMarkup(version.id)">Удалить</v-btn>
-              </div>
-            </div>
-            <div class="d-flex justify-end mt-4">
-              <v-btn class="action-btn" @click="openCreateMarkupModal">Создать версию</v-btn>
-            </div>
-          </v-card-text>
-        </v-card>
-      </v-dialog>
+      <!-- Модальное окно "Версии разметок" -->
+<v-dialog v-model="showMarkupModal" max-width="800">
+  <v-card>
+    <v-card-title class="d-flex justify-space-between align-center">
+      <span>Версии разметок</span>
+      <v-btn class="close-btn" @click="closeMarkupModal">Закрыть</v-btn>
+    </v-card-title>
+    <v-card-text>
+      <div class="markup-cards-list">
+        <div
+          class="markup-card"
+          v-for="version in currentMarkups"
+          :key="version.id"
+        >
+          <div class="markup-card-header">
+            <h4>{{ version.name }}</h4>
+          </div>
+          <p class="markup-description">Описание: {{ version.description }}</p>
+          <div class="markup-actions-bottom">
+            <v-btn class="action-btn" @click="goToMarkup(version)">Перейти</v-btn>
+            <v-btn class="action-btn" @click="editMarkup(version)">Редактировать</v-btn>
+            <v-btn class="action-btn" @click="deleteMarkup(version.id)">Удалить</v-btn>
+          </div>
+        </div>
+      </div>
+      <div class="d-flex justify-end mt-4">
+        <v-btn class="action-btn" @click="openCreateMarkupModal">Создать версию</v-btn>
+      </div>
+    </v-card-text>
+  </v-card>
+</v-dialog>
 
       <!-- Модальное окно "Создать/Редактировать версию" -->
       <v-dialog v-model="showCreateMarkupModal" max-width="600">
         <v-card>
           <v-card-title class="d-flex justify-space-between align-center">
             <span>{{ editingMarkup ? 'Редактировать версию' : 'Создать новую версию' }}</span>
-            <v-btn icon @click="closeCreateMarkupModal">
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
+            <v-btn class="close-btn" @click="closeCreateMarkupModal">Закрыть</v-btn>
           </v-card-title>
           <v-card-text>
             <v-form ref="createMarkupForm" @submit.prevent="createOrUpdateMarkup">
@@ -118,42 +121,39 @@
       </v-dialog>
 
       <!-- Модальное окно "Управление полями разметки" -->
-      <v-dialog v-model="showMarkupFieldsModal" max-width="800">
-        <v-card>
-          <v-card-title class="d-flex justify-space-between align-center">
-            <span>Управление полями разметки</span>
-            <v-btn icon @click="showMarkupFieldsModal = false">
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
-          </v-card-title>
-          <v-card-text>
-            <div class="field-management">
-              <!-- Поле для добавления новых элементов -->
-              <div class="add-field-section">
-                <v-text-field
-                  v-model="newFieldName"
-                  label="Новое поле"
-                  @keyup.enter="addField"
-                ></v-text-field>
-                <v-btn class="action-btn" @click="addField">Добавить поле</v-btn>
-              </div>
-              <!-- Список существующих полей -->
-              <div class="fields-list">
-                <div v-for="(field, index) in currentMarkupFields" :key="index" class="field-item">
-                  <span>{{ field }}</span>
-                  <v-btn icon color="error" @click="removeField(index)">
-                    <v-icon>mdi-delete</v-icon>
-                  </v-btn>
-                </div>
-              </div>
-              <!-- Кнопка выбора -->
-              <v-btn class="action-btn choose-btn" block @click="saveAndClose">
-                Выбрать
-              </v-btn>
-            </div>
-          </v-card-text>
-        </v-card>
-      </v-dialog>
+<v-dialog v-model="showMarkupFieldsModal" max-width="800">
+  <v-card>
+    <v-card-title class="d-flex justify-space-between align-center">
+      <span>Управление полями разметки</span>
+      <v-btn class="close-btn" @click="showMarkupFieldsModal = false">Закрыть</v-btn>
+    </v-card-title>
+    <v-card-text>
+      <div class="field-management">
+        <!-- Поле для добавления новых элементов -->
+        <div class="add-field-section">
+          <v-text-field
+            v-model="newFieldName"
+            label="Новое поле"
+            @keyup.enter="addField"
+          ></v-text-field>
+          <v-btn class="action-btn" @click="addField">Добавить поле</v-btn>
+        </div>
+        <!-- Список существующих полей -->
+        <div class="fields-list">
+          <div v-for="(field, index) in currentMarkupFields" :key="index" class="field-item">
+            <span>{{ field }}</span>
+            <!-- Кнопка удаления поля -->
+            <v-btn class="close-btn" @click="removeField(index)">Удалить</v-btn>
+          </div>
+        </div>
+        <!-- Кнопка выбора -->
+        <v-btn class="action-btn choose-btn" block @click="saveAndClose">
+          Выбрать
+        </v-btn>
+      </div>
+    </v-card-text>
+  </v-card>
+</v-dialog>
     </div>
   </v-container>
 </template>
@@ -587,13 +587,77 @@ const closeMarkupModal = () => {
 }
 
 /* Кнопка "Выбрать" */
+/* Стиль для кнопки "Выбрать" */
 .choose-btn {
   margin-top: 20px;
-  background-color: #4CAF50 !important; /* Зеленый */
-  color: white !important;
+  background-color: #444444 !important; /* Темно-серый */
+  color: white !important; /* Белый текст */
+  font-weight: bold;
+  text-transform: uppercase; /* Заглавные буквы */
+  padding: 10px 20px;
+  border-radius: 8px;
 }
 
 .choose-btn:hover {
-  background-color: #45a049 !important; /* Чуть темнее зеленый */
+  background-color: #333333 !important; /* Чуть темнее серый */
+}
+
+.close-btn {
+  background-color: transparent !important; /* Убираем фон */
+  color: #444444; /* Темно-серый текст */
+  font-size: 1rem;
+  font-weight: bold;
+  text-transform: none; /* Отключаем заглавные буквы */
+  padding: 10; /* Убираем отступы */
+  min-width: auto; /* Убираем минимальную ширину */
+  margin-left: auto; /* Перемещаем кнопку вправо */
+}
+
+.close-btn:hover {
+  color: #333333; /* Чуть темнее серый при наведении */
+}
+
+/* Список карточек версий разметки */
+.markup-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+/* Карточка версии разметки */
+.markup-card {
+  background-color: #ffffff; /* Белый фон */
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Легкая тень */
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+}
+
+/* Заголовок карточки версии */
+.markup-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  color: #444444; /* Темно-серый текст */
+}
+
+
+/* Описание версии */
+.markup-description {
+  color: #444444; /* Темно-серый текст */
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+/* Нижняя часть карточки с кнопками */
+.markup-actions-bottom {
+  display: flex;
+  justify-content: flex-start;
+  gap: 10px;
 }
 </style>
