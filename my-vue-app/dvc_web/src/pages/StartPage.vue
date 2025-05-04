@@ -20,7 +20,7 @@
           </p>
 
           <!-- Кнопка -->
-          <v-btn class="start-btn" @click="startWork">
+          <v-btn class="start-btn" @click="startGallery">
             Перейти
           </v-btn>
         </v-card-text>
@@ -41,7 +41,7 @@
           </p>
 
           <!-- Кнопка -->
-          <v-btn class="start-btn" @click="startWork">
+          <v-btn class="start-btn" @click="startProjects">
             Перейти
           </v-btn>
         </v-card-text>
@@ -58,9 +58,12 @@ import { mdiListBoxOutline } from '@mdi/js';
 
 const router = useRouter()
 
-const startWork = () => {
+const startProjects = () => {
   router.push({ name: 'ProjectDashboard' })
 }
+const startGallery = () => {
+  router.push({ name: 'GalleryPage' }); // Переход на страницу галереи
+};
 </script>
 
 <style scoped>

@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import StartPage from '../pages/StartPage.vue'
 import MarkupPage from '../pages/MarkupPage.vue'
 import ProjectDashboard from '../pages/ProjectDashboard.vue'
+import GalleryPage from '../pages/GalleryPage.vue'; // Страница галереи
 
 const routes = [
   {
@@ -23,7 +24,12 @@ const routes = [
     path: '/projects',
     name: 'ProjectDashboard',
     component: ProjectDashboard
-  }
+  },
+  {
+    path: '/gallery',
+    name: 'GalleryPage',
+    component: GalleryPage,
+  },
 ]
 
 const router = createRouter({

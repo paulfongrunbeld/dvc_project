@@ -25,26 +25,25 @@
         ></canvas>
         <v-btn class="send-btn" @click="submitData">Отправить</v-btn>
       </div>
-
       <!-- Правая панель инструментов -->
       <div class="annotation-panel">
         <h4 class="panel-title">Управление аннотациями</h4>
         <div class="annotations-list">
-  <div v-for="annotation in fields" :key="annotation" class="annotation-item">
-    <v-btn
-      class="annotation-btn"
-      :class="{ active: annotation === currentAnnotationType }"
-      @click="selectAnnotation(annotation)"
-    >
-      {{ annotation }}
-    </v-btn>
-    <input
-      type="color"
-      v-model="annotationColors[annotation]"
-      class="color-picker"
-    />
-  </div>
-</div>
+          <div v-for="annotation in fields" :key="annotation" class="annotation-item">
+            <v-btn
+              class="annotation-btn"
+              :class="{ active: annotation === currentAnnotationType }"
+              @click="selectAnnotation(annotation)"
+            >
+              {{ annotation }}
+            </v-btn>
+            <input
+              type="color"
+              v-model="annotationColors[annotation]"
+              class="color-picker"
+            />
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -53,6 +52,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 
+// Пропсы компонента
 const props = defineProps({
   projectId: String,
   versionId: String,
@@ -62,7 +62,10 @@ const props = defineProps({
   }
 });
 
-// Состояния для управления аннотациями
+// ===============================
+// СОСТОЯНИЯ ДЛЯ УПРАВЛЕНИЯ АННОТАЦИЯМИ
+// ===============================
+
 const currentAnnotationType = ref(props.fields.length ? props.fields[0] : null);
 const canvasSize = 500;
 
@@ -87,16 +90,31 @@ const annotations = ref([]);
 const currentAnnotation = ref(null);
 const isDrawing = ref(false);
 
-// Выбор типа аннотации
+// ===============================
+// МЕТОДЫ ДЛЯ УПРАВЛЕНИЯ АННОТАЦИЯМИ
+// ===============================
+
+/**
+ * Выбор типа аннотации.
+ */
 const selectAnnotation = (annotation) => {
   currentAnnotationType.value = annotation;
 };
 
-// Загрузка изображения
+// ===============================
+// МЕТОДЫ ДЛЯ ЗАГРУЗКИ ИЗОБРАЖЕНИЯ
+// ===============================
+
+/**
+ * Открывает диалоговое окно для выбора файла.
+ */
 const triggerFileInput = () => {
   fileInput.value.click();
 };
 
+/**
+ * Обрабатывает загруженный файл изображения.
+ */
 const onFileChange = (event) => {
   const file = event.target.files[0];
   if (!file) return;
@@ -108,6 +126,9 @@ const onFileChange = (event) => {
   reader.readAsDataURL(file);
 };
 
+/**
+ * Загружает изображение на холст.
+ */
 const loadImage = (imageSrc) => {
   const imgElement = new Image();
   imgElement.onload = () => {
@@ -115,51 +136,44 @@ const loadImage = (imageSrc) => {
     const scale = Math.min(canvasSize / imgElement.width, canvasSize / imgElement.height);
     imageWidth.value = imgElement.width * scale;
     imageHeight.value = imgElement.height * scale;
-
-    // Устанавливаем левый верхний угол изображения в левый верхний угол канваса
     imageX.value = 0; // Левый край приклеивается к левому краю канваса
     imageY.value = 0; // Верхний край приклеивается к верхнему краю канваса
-
     annotations.value = [];
     redrawCanvas();
   };
   imgElement.src = imageSrc;
 };
 
-// Перерисовка холста
+// ===============================
+// МЕТОДЫ ДЛЯ РИСОВАНИЯ НА ХОЛСТЕ
+// ===============================
+
+/**
+ * Перерисовывает холст с текущим изображением и аннотациями.
+ */
 const redrawCanvas = () => {
   const ctx = canvas.value.getContext('2d');
   canvas.value.width = canvasSize; // Очищаем канвас
   canvas.value.height = canvasSize;
-
-  // Заливаем фон
   ctx.fillStyle = 'black';
   ctx.fillRect(0, 0, canvasSize, canvasSize);
-
-  // Рисуем изображение
   if (img.value) {
     ctx.drawImage(img.value, imageX.value, imageY.value, imageWidth.value, imageHeight.value);
   }
-
-  // Рисуем сохраненные аннотации
-  annotations.value.forEach((ann) => {
-    drawAnnotation(ctx, ann);
-  });
-
-  // Рисуем текущую аннотацию
+  annotations.value.forEach((ann) => drawAnnotation(ctx, ann));
   if (isDrawing.value && currentAnnotation.value) {
     drawAnnotation(ctx, currentAnnotation.value);
   }
 };
 
-// Рисование аннотации
+/**
+ * Рисует аннотацию на холсте.
+ */
 const drawAnnotation = (ctx, ann) => {
   const color = annotationColors.value[ann.type]; // Получаем цвет для аннотации
   ctx.strokeStyle = color;
   ctx.lineWidth = 2;
   ctx.strokeRect(ann.x, ann.y, ann.width, ann.height);
-
-  // Добавляем текст с названием аннотации
   ctx.font = '16px Arial';
   ctx.fillStyle = color;
   let textX = ann.x + 5;
@@ -170,62 +184,64 @@ const drawAnnotation = (ctx, ann) => {
   ctx.fillText(ann.type, textX, textY);
 };
 
-// Обработка событий мыши
+// ===============================
+// МЕТОДЫ ДЛЯ ОБРАБОТКИ СОБЫТИЙ МЫШИ
+// ===============================
+
+/**
+ * Получает координаты мыши относительно холста.
+ */
 const getMousePos = (event) => {
-  const rect = canvas.value.getBoundingClientRect(); // Получаем положение канваса
+  const rect = canvas.value.getBoundingClientRect();
   return {
-    x: event.clientX - rect.left, // Вычитаем смещение слева
-    y: event.clientY - rect.top,  // Вычитаем смещение сверху
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top,
   };
 };
 
+/**
+ * Обрабатывает нажатие кнопки мыши.
+ */
 const handleMouseDown = (event) => {
   if (!currentAnnotationType.value || !img.value) return;
-
-  // Удаляем существующую аннотацию выбранного типа
   annotations.value = annotations.value.filter(
     (ann) => ann.type !== currentAnnotationType.value
   );
-
   isDrawing.value = true;
-  const pos = getMousePos(event); // Получаем корректные координаты мыши
-
-  // Учитываем позицию изображения на канвасе
+  const pos = getMousePos(event);
   currentAnnotation.value = {
     type: currentAnnotationType.value,
-    x: pos.x - imageX.value, // Вычитаем смещение изображения по X
-    y: pos.y - imageY.value, // Вычитаем смещение изображения по Y
+    x: pos.x - imageX.value,
+    y: pos.y - imageY.value,
     width: 0,
     height: 0,
   };
 };
 
+/**
+ * Обрабатывает движение мыши.
+ */
 const handleMouseMove = (event) => {
   if (!isDrawing.value) return;
-
-  const pos = getMousePos(event); // Получаем корректные координаты мыши
+  const pos = getMousePos(event);
   const ann = currentAnnotation.value;
-
-  // Ограничиваем ширину и высоту границами изображения
   ann.width = Math.min(imageWidth.value - ann.x, Math.max(0, pos.x - imageX.value - ann.x));
   ann.height = Math.min(imageHeight.value - ann.y, Math.max(0, pos.y - imageY.value - ann.y));
-
-  redrawCanvas(); // Перерисовываем холст
+  redrawCanvas();
 };
 
+/**
+ * Обрабатывает отпускание кнопки мыши.
+ */
 const handleMouseUp = () => {
   if (!isDrawing.value) return;
-
   isDrawing.value = false;
-
   if (
     currentAnnotation.value &&
     Math.abs(currentAnnotation.value.width) > 5 &&
     Math.abs(currentAnnotation.value.height) > 5
   ) {
     let { x, y, width, height } = currentAnnotation.value;
-
-    // Корректируем координаты, если пользователь рисует справа налево или снизу вверх
     if (width < 0) {
       x += width;
       width = Math.abs(width);
@@ -234,20 +250,15 @@ const handleMouseUp = () => {
       y += height;
       height = Math.abs(height);
     }
-
-    annotations.value.push({
-      type: currentAnnotation.value.type,
-      x,
-      y,
-      width,
-      height,
-    });
+    annotations.value.push({ type: currentAnnotation.value.type, x, y, width, height });
   }
-
   currentAnnotation.value = null;
   redrawCanvas();
 };
 
+/**
+ * Обрабатывает выход курсора за пределы холста.
+ */
 const handleMouseLeave = () => {
   if (isDrawing.value) {
     isDrawing.value = false;
@@ -256,7 +267,13 @@ const handleMouseLeave = () => {
   }
 };
 
-// Отправка данных
+// ===============================
+// МЕТОДЫ ДЛЯ ОТПРАВКИ ДАННЫХ
+// ===============================
+
+/**
+ * Отправляет данные о разметке.
+ */
 const submitData = () => {
   const dataToSend = {
     fileName: fileName.value,
@@ -272,7 +289,10 @@ const submitData = () => {
   // Здесь можно добавить логику отправки данных на сервер
 };
 
-// Инициализация холста
+// ===============================
+// ИНИЦИАЛИЗАЦИЯ ХОЛСТА
+// ===============================
+
 onMounted(() => {
   canvas.value.width = canvasSize;
   canvas.value.height = canvasSize;
@@ -291,7 +311,7 @@ onMounted(() => {
 
 .main-wrapper {
   display: flex;
-  gap: 10px; /* Уменьшаем расстояние между канвасом и панелью */
+  gap: 10px;
   max-width: 1200px;
   width: 100%;
   padding: 20px;
@@ -326,10 +346,10 @@ onMounted(() => {
 }
 
 .image-canvas {
-  position: relative; /* Обеспечивает правильное позиционирование */
+  position: relative;
   width: 100%;
   max-width: 600px;
-  aspect-ratio: 1 / 1; /* Квадратный холст */
+  aspect-ratio: 1 / 1;
   border: 2px solid #ccc;
   background-color: black;
   cursor: crosshair;
@@ -380,7 +400,7 @@ onMounted(() => {
 }
 
 .annotation-btn {
-  background-color: #444444; /* Темно-серый */
+  background-color: #444444;
   color: white;
   font-weight: bold;
   padding: 10px;
@@ -391,12 +411,12 @@ onMounted(() => {
 }
 
 .annotation-btn.active {
-  background-color: white; /* Белый фон */
-  color: black; /* Черный текст */
+  background-color: white;
+  color: black;
 }
 
 .annotation-btn:hover {
-  background-color: #333333; /* Чуть темнее серый */
+  background-color: #333333;
 }
 
 .color-picker {
