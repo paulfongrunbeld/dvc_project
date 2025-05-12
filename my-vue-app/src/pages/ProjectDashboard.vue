@@ -10,19 +10,19 @@
       <!-- Список проектов -->
       <div class="projects-list">
         <div class="project-card" v-for="project in projects" :key="project.id">
-  <div class="project-card-header">
-    <h3>{{ project.name }}</h3>
-    <div class="project-info">
-      <p class="created-at">Создан: {{ formatDate(project.createdAt) }}</p>
-    </div>
-  </div>
-  <p class="project-description">Описание проекта: {{ project.description }}</p>
-  <div class="project-actions-bottom">
-    <v-btn class="view-project-btn" @click="viewProject(project.id)">Просмотреть</v-btn>
-    <v-btn class="action-btn" @click="editProject(project.id)">Редактировать</v-btn>
-    <v-btn class="action-btn" @click="deleteProject(project.id)">Удалить</v-btn>
-  </div>
-</div>
+          <div class="project-card-header">
+            <h3>{{ project.name }}</h3>
+            <div class="project-info">
+              <p class="created-at">Создан: {{ formatDate(project.createdAt) }}</p>
+            </div>
+          </div>
+          <p class="project-description">Описание проекта: {{ project.description }}</p>
+          <div class="project-actions-bottom">
+            <v-btn class="view-project-btn" @click="viewProject(project.id)">Просмотреть</v-btn>
+            <v-btn class="action-btn" @click="editProject(project.id)">Редактировать</v-btn>
+            <v-btn class="action-btn" @click="deleteProject(project.uuid)">Удалить</v-btn>
+          </div>
+        </div>
       </div>
 
       <!-- Модальное окно "Создать/Редактировать проект" -->
@@ -34,18 +34,10 @@
           </v-card-title>
           <v-card-text>
             <v-form ref="createForm" @submit.prevent="createOrUpdateProject">
-              <v-text-field
-                v-model="newProject.name"
-                label="Название проекта"
-                required
-                :rules="[v => !!v || 'Обязательное поле']"
-              ></v-text-field>
-              <v-textarea
-                v-model="newProject.description"
-                label="Описание проекта"
-                required
-                :rules="[v => !!v || 'Обязательное поле']"
-              ></v-textarea>
+              <v-text-field v-model="newProject.name" label="Название проекта" required
+                :rules="[v => !!v || 'Обязательное поле']"></v-text-field>
+              <v-textarea v-model="newProject.description" label="Описание проекта" required
+                :rules="[v => !!v || 'Обязательное поле']"></v-textarea>
               <div class="d-flex justify-end">
                 <v-btn type="submit" class="action-btn">
                   {{ editingProject ? 'Сохранить' : 'Создать' }}
@@ -58,36 +50,32 @@
 
       <!-- Модальное окно "Версии разметок" -->
       <!-- Модальное окно "Версии разметок" -->
-<v-dialog v-model="showMarkupModal" max-width="800">
-  <v-card>
-    <v-card-title class="d-flex justify-space-between align-center">
-      <span>Версии разметок</span>
-      <v-btn class="close-btn" @click="closeMarkupModal">Закрыть</v-btn>
-    </v-card-title>
-    <v-card-text>
-      <div class="markup-cards-list">
-        <div
-          class="markup-card"
-          v-for="version in currentMarkups"
-          :key="version.id"
-        >
-          <div class="markup-card-header">
-            <h4>{{ version.name }}</h4>
-          </div>
-          <p class="markup-description">Описание: {{ version.description }}</p>
-          <div class="markup-actions-bottom">
-            <v-btn class="action-btn" @click="goToMarkup(version)">Перейти</v-btn>
-            <v-btn class="action-btn" @click="editMarkup(version)">Редактировать</v-btn>
-            <v-btn class="action-btn" @click="deleteMarkup(version.id)">Удалить</v-btn>
-          </div>
-        </div>
-      </div>
-      <div class="d-flex justify-end mt-4">
-        <v-btn class="action-btn" @click="openCreateMarkupModal">Создать версию</v-btn>
-      </div>
-    </v-card-text>
-  </v-card>
-</v-dialog>
+      <v-dialog v-model="showMarkupModal" max-width="800">
+        <v-card>
+          <v-card-title class="d-flex justify-space-between align-center">
+            <span>Версии разметок</span>
+            <v-btn class="close-btn" @click="closeMarkupModal">Закрыть</v-btn>
+          </v-card-title>
+          <v-card-text>
+            <div class="markup-cards-list">
+              <div class="markup-card" v-for="version in currentMarkups" :key="version.id">
+                <div class="markup-card-header">
+                  <h4>{{ version.name }}</h4>
+                </div>
+                <p class="markup-description">Описание: {{ version.description }}</p>
+                <div class="markup-actions-bottom">
+                  <v-btn class="action-btn" @click="goToMarkup(version)">Перейти</v-btn>
+                  <v-btn class="action-btn" @click="editMarkup(version)">Редактировать</v-btn>
+                  <v-btn class="action-btn" @click="deleteMarkup(version.uuid)">Удалить</v-btn>
+                </div>
+              </div>
+            </div>
+            <div class="d-flex justify-end mt-4">
+              <v-btn class="action-btn" @click="openCreateMarkupModal">Создать версию</v-btn>
+            </div>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
 
       <!-- Модальное окно "Создать/Редактировать версию" -->
       <v-dialog v-model="showCreateMarkupModal" max-width="600">
@@ -98,18 +86,10 @@
           </v-card-title>
           <v-card-text>
             <v-form ref="createMarkupForm" @submit.prevent="createOrUpdateMarkup">
-              <v-text-field
-                v-model="newMarkup.name"
-                label="Название версии"
-                required
-                :rules="[v => !!v || 'Обязательное поле']"
-              ></v-text-field>
-              <v-textarea
-                v-model="newMarkup.description"
-                label="Описание версии"
-                required
-                :rules="[v => !!v || 'Обязательное поле']"
-              ></v-textarea>
+              <v-text-field v-model="newMarkup.name" label="Название версии" required
+                :rules="[v => !!v || 'Обязательное поле']"></v-text-field>
+              <v-textarea v-model="newMarkup.description" label="Описание версии" required
+                :rules="[v => !!v || 'Обязательное поле']"></v-textarea>
               <div class="d-flex justify-end">
                 <v-btn type="submit" class="action-btn">
                   {{ editingMarkup ? 'Сохранить' : 'Создать' }}
@@ -121,60 +101,61 @@
       </v-dialog>
 
       <!-- Модальное окно "Управление полями разметки" -->
-<v-dialog v-model="showMarkupFieldsModal" max-width="800">
-  <v-card>
-    <v-card-title class="d-flex justify-space-between align-center">
-      <span>Управление полями разметки</span>
-      <v-btn class="close-btn" @click="showMarkupFieldsModal = false">Закрыть</v-btn>
-    </v-card-title>
-    <v-card-text>
-      <div class="field-management">
-        <!-- Поле для добавления новых элементов -->
-        <div class="add-field-section">
-          <v-text-field
-            v-model="newFieldName"
-            label="Новое поле"
-            @keyup.enter="addField"
-          ></v-text-field>
-          <v-btn class="action-btn" @click="addField">Добавить поле</v-btn>
-        </div>
-        <!-- Список существующих полей -->
-        <div class="fields-list">
-          <div v-for="(field, index) in currentMarkupFields" :key="index" class="field-item">
-            <span>{{ field }}</span>
-            <!-- Кнопка удаления поля -->
-            <v-btn class="close-btn" @click="removeField(index)">Удалить</v-btn>
-          </div>
-        </div>
-        <!-- Кнопка выбора -->
-        <v-btn class="action-btn choose-btn" block @click="saveAndClose">
-          Выбрать
-        </v-btn>
-      </div>
-    </v-card-text>
-  </v-card>
-</v-dialog>
+      <v-dialog v-model="showMarkupFieldsModal" max-width="800">
+        <v-card>
+          <v-card-title class="d-flex justify-space-between align-center">
+            <span>Управление полями разметки</span>
+            <v-btn class="close-btn" @click="showMarkupFieldsModal = false">Закрыть</v-btn>
+          </v-card-title>
+          <v-card-text>
+            <div class="field-management">
+              <!-- Поле для добавления новых элементов -->
+              <div class="add-field-section">
+                <v-text-field v-model="newFieldName" label="Новое поле" @keyup.enter="addField"></v-text-field>
+                <v-btn class="action-btn" @click="addField">Добавить поле</v-btn>
+              </div>
+              <!-- Список существующих полей -->
+              <div class="fields-list">
+                <div v-for="(field, index) in currentMarkupFields" :key="index" class="field-item">
+                  <span>{{ field }}</span>
+                  <!-- Кнопка удаления поля -->
+                  <v-btn class="close-btn" @click="removeField(index)">Удалить</v-btn>
+                </div>
+              </div>
+              <!-- Кнопка выбора -->
+              <v-btn class="action-btn choose-btn" block @click="saveAndClose">
+                Выбрать
+              </v-btn>
+            </div>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
     </div>
   </v-container>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, getCurrentInstance, onMounted } from 'vue';
 
 import { useRouter } from 'vue-router';
-
+const { proxy } = getCurrentInstance();
+const api = proxy.$api;
 const router = useRouter();
-
 const showMarkupFieldsModal = ref(false);
 const currentMarkupFields = ref([]);
 const newFieldName = ref('');
 const selectedMarkupVersion = ref(null);
 
 // В методе goToMarkup:
-const goToMarkup = (version) => {
-  selectedMarkupVersion.value = version;
-  currentMarkupFields.value = version.fields ? [...version.fields] : [];
-  showMarkupFieldsModal.value = true;
+const goToMarkup = async (version) => {
+  try {
+    const markupDetails = await api.markupDescription.getMarkupDescriptionByUuid(version.id);
+    selectedMarkupVersion.value = markupDetails;
+    currentMarkupFields.value = markupDetails.fields ? JSON.parse(markupDetails.fields) : [];
+    showMarkupFieldsModal.value = true;
+  } catch (err) {
+    console.error('Ошибка загрузки разметки:', err);
+  }
 };
 
 // Новые методы для работы с полями
@@ -189,27 +170,28 @@ const removeField = (index) => {
   currentMarkupFields.value.splice(index, 1);
 };
 
-const saveAndClose = () => {
-  // Сохраняем поля в выбранную версию
-  const projectMarkups = markups.value.find(m => m.projectId === currentProjectId.value);
-  if (projectMarkups) {
-    const versionIndex = projectMarkups.versions.findIndex(v => v.id === selectedMarkupVersion.value.id);
-    if (versionIndex !== -1) {
-      projectMarkups.versions[versionIndex].fields = [...currentMarkupFields.value];
-    }
+const saveAndClose = async () => {
+  try {
+    await api.markupDescription.updateMarkupDescription(
+      selectedMarkupVersion.value.id,
+      {
+        fields: JSON.stringify(currentMarkupFields.value)
+      }
+    );
+    
+    router.push({
+      name: 'MarkupPage',
+      query: {
+        projectId: currentProjectId.value,
+        versionId: selectedMarkupVersion.value.id,
+        fields: JSON.stringify(currentMarkupFields.value)
+      }
+    });
+    
+    showMarkupFieldsModal.value = false;
+  } catch (err) {
+    console.error('Ошибка сохранения полей:', err);
   }
-  
-  // Переход на страницу разметки с передачей параметров
-  router.push({
-    name: 'MarkupPage',
-    query: {
-      projectId: currentProjectId.value,
-      versionId: selectedMarkupVersion.value.id,
-      fields: JSON.stringify(currentMarkupFields.value)
-    }
-  });
-  
-  showMarkupFieldsModal.value = false;
 };
 
 const createMarkupForm = ref(null);
@@ -230,83 +212,132 @@ const closeCreateMarkupModal = () => {
 
 const createOrUpdateMarkup = async () => {
   const { valid } = await createMarkupForm.value.validate();
+  if (!valid) return;
 
-  if (valid) {
-    const projectId = currentProjectId.value;
-    const project = markups.value.find(m => m.projectId === projectId);
-
+  try {
     if (editingMarkup.value) {
-      // Редактирование
-      const index = project.versions.findIndex(v => v.id === editingMarkup.value.id);
-      project.versions[index] = { ...newMarkup.value };
-      editingMarkup.value = null; // Сброс
-    } else {
-      // Создание
-      const newId = project ? project.versions.length + 1 : 1;
-      const newVersion = {
-        id: newId,
-        name: newMarkup.value.name,
-        description: newMarkup.value.description,
-      };
+      // Обновление существующей разметки
+      const updated = await api.markupDescription.updateMarkupDescription(
+        editingMarkup.value.id,
+        {
+          name: newMarkup.value.name,
+          description: newMarkup.value.description,
+          fields: JSON.stringify(currentMarkupFields.value)
+        }
+      );
       
-      if (project) {
-        project.versions.push(newVersion);
-      } else {
-        markups.value.push({ projectId, versions: [newVersion] });
+      if (updated) {
+        await loadMarkupDescriptions(currentProjectId.value);
+      }
+    } else {
+      // Создание новой разметки
+      const newMarkupDesc = await api.markupDescription.createEmptyMarkupDescription(
+        currentProjectId.value
+      );
+      
+      if (newMarkupDesc?.uuid) {
+        await api.markupDescription.updateMarkupDescription(
+          newMarkupDesc.uuid,
+          {
+            name: newMarkup.value.name,
+            description: newMarkup.value.description,
+            fields: JSON.stringify(currentMarkupFields.value)
+          }
+        );
+        
+        await loadMarkupDescriptions(currentProjectId.value);
       }
     }
-
+    
     closeCreateMarkupModal();
+  } catch (err) {
+    console.error('Ошибка сохранения разметки:', err);
   }
 };
 
 const currentProjectId = ref(null);
 
-const projects = ref([
-  {
-    id: 1,
-    name: 'Проект 1',
-    createdAt: '2023-05-15T10:00:00Z',
-    description: 'Длинное описание проекта 1.',
-  },
-  {
-    id: 2,
-    name: 'Проект 2',
-    createdAt: '2023-06-20T14:30:00Z',
-    description: 'Длинное описание проекта 2.',
-  },
-]);
+const projects = ref([]);
+const loadProjects = async () => {
+  try {
+    const response = await api.project.getAllProjects();
+    projects.value = response.map(p => ({
+      id: p.uuid, // Используем uuid как идентификатор
+      uuid: p.uuid,
+      name: p.name,
+      description: p.description,
+      createdAt: p.createdAt
+    }));
+  } catch (err) {
+    console.error('Ошибка загрузки проектов:', err);
+  }
+};
 
-const markups = ref([
-  {
-    projectId: 1,
-    versions: [
-      { 
-        id: 1, 
-        name: 'Версия 1', 
-        description: 'Описание первой версии',
-        fields: ['Кошка', 'Собака', 'Птица']
-      },
-      { 
-        id: 2, 
-        name: 'Версия 2', 
-        description: 'Описание второй версии',
-        fields: ['Автомобиль', 'Велосипед']
-      },
-    ],
-  },
-  {
-    projectId: 2,
-    versions: [
-      { 
-        id: 3, 
-        name: 'Версия 1', 
-        description: 'Описание первой версии',
-        fields: ['Дерево', 'Цветок']
-      },
-    ],
-  },
-]);
+const deleteProject = async (uuid) => {
+  console.log("delete uuid")
+  console.log(uuid)
+  try {
+    const project = projects.value.find(p => p.uuid === uuid);
+    if (!project) return;
+
+    const updated = await api.project.updateProject(uuid, {
+      ...project,
+      Removed: true
+    });
+
+    if (updated?.success) {
+      projects.value = projects.value.filter(p => p.uuid !== uuid);
+    }
+    loadProjects()
+  } catch (error) {
+    console.error('Ошибка удаления проекта:', error);
+  }
+};
+
+const updateProject = async (uuid, updatedData) => {
+  try {
+    const result = await api.project.updateProject(uuid, updatedData);
+    if (result?.success) {
+      const index = projects.value.findIndex(p => p.uuid === uuid);
+      if (index !== -1) {
+        projects.value[index] = {
+          ...projects.value[index],
+          ...updatedData
+        };
+      }
+    }
+  } catch (error) {
+    console.error('Ошибка обновления проекта:', error);
+  }
+};
+
+const loadMarkupDescriptions = async (projectUuid) => {
+  // try {
+    const response = await api.markupDescription.getMarkupDescriptionsByProject(projectUuid);
+
+    currentMarkups.value = response.map(m => ({
+      uuid: m.uuid, 
+      name: m.name,
+      description: m.description,
+      fields: m.fields
+    }));
+  // } catch (err) {
+  //   console.error('Ошибка загрузки разметок:', err);
+  // }
+};
+
+const viewProject = async (id) => {
+  const project = projects.value.find(p => p.id === id);
+  if (!project) return;
+  
+  currentProjectId.value = project.uuid;
+  await loadMarkupDescriptions(project.uuid);
+  showMarkupModal.value = true;
+};
+
+onMounted(async () => {
+  await loadProjects();
+});
 
 const showCreateModal = ref(false);
 const createForm = ref(null);
@@ -358,52 +389,51 @@ const formatDate = (date) => {
   return new Date(date).toLocaleDateString(undefined, options);
 };
 
-// Создание или обновление проекта
 const createOrUpdateProject = async () => {
   const { valid } = await createForm.value.validate();
+  if (!valid) return;
 
-  if (valid) {
+  try {
     if (editingProject.value) {
       // Обновление существующего проекта
-      const index = projects.value.findIndex((p) => p.id === editingProject.value.id);
-      if (index !== -1) {
-        projects.value[index] = { ...projects.value[index], ...newProject.value };
+      const updated = await api.project.updateProject(editingProject.value.uuid, {
+        Name: newProject.value.name,
+        Description: newProject.value.description,
+        Removed: editingProject.value.Removed || false
+      });
+
+      if (updated?.success) {
+        const index = projects.value.findIndex(p => p.uuid === editingProject.value.uuid);
+        if (index !== -1) {
+          projects.value[index] = {
+            ...projects.value[index],
+            name: newProject.value.name,
+            description: newProject.value.description
+          };
+        }
       }
     } else {
       // Создание нового проекта
-      const newId = projects.value.length + 1;
-      projects.value.push({
-        id: newId,
-        name: newProject.value.name,
-        description: newProject.value.description,
-        createdAt: new Date().toISOString(),
-      });
-    }
+      const emptyProject = await api.project.createEmptyProject();
+      console.log(emptyProject)
+      if (emptyProject?.uuid) {
+        const created = await api.project.updateProject(emptyProject.uuid, {
+          Name: newProject.value.name,
+          Description: newProject.value.description
+        });
 
+        if (created?.success) {
+          await loadProjects(); // Перезагружаем проекты
+        }
+      }
+    }
+    loadProjects()
+  } catch (error) {
+    console.error('Ошибка сохранения проекта:', error);
+  } finally {
     closeCreateProjectModal();
   }
 };
-
-// Удаление проекта
-const deleteProject = (id) => {
-  projects.value = projects.value.filter((p) => p.id !== id);
-};
-
-// Навигация к просмотру проекта (заглушка)
-const viewProject = (id) => {
-  currentProjectId.value = id;
-  const projectMarkups = markups.value.find((m) => m.projectId === id)?.versions || [];
-  currentMarkups.value = projectMarkups;
-  showMarkupModal.value = true;
-};
-
-// Автоматическое заполнение формы при редактировании
-watch(editingProject, (newVal) => {
-  if (newVal) {
-    newProject.value = { ...newVal }; // Заполняем форму данными редактируемого проекта
-  }
-});
-
 
 
 const editMarkup = (version) => {
@@ -413,15 +443,17 @@ const editMarkup = (version) => {
 };
 
 // Удалить версию
-const deleteMarkup = (id) => {
-  const projectIndex = markups.value.findIndex((m) =>
-    m.versions.some((v) => v.id === id)
-  );
-  if (projectIndex !== -1) {
-    markups.value[projectIndex].versions = markups.value[
-      projectIndex
-    ].versions.filter((v) => v.id !== id);
-    currentMarkups.value = markups.value[projectIndex].versions;
+const deleteMarkup = async (uuid) => {
+  try {
+    // Вызов нового эндпоинта для мягкого удаления
+    const response = await api.markupDescription.removeMarkupDescription(uuid);
+    if (response?.success) {
+      // Обновление списка разметок на странице
+      currentMarkups.value = currentMarkups.value.filter(m => m.uuid !== uuid);
+    }
+    loadMarkupDescriptions(currentProjectId.value)
+  } catch (err) {
+    console.error('Ошибка удаления разметки:', err);
   }
 };
 
@@ -434,7 +466,8 @@ const closeMarkupModal = () => {
 <style scoped>
 /* Градиентный фон страницы */
 .gradient-bg {
-  background: linear-gradient(135deg, #f9f9f9, #eaeaea); /* Линейный градиент */
+  background: linear-gradient(135deg, #f9f9f9, #eaeaea);
+  /* Линейный градиент */
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -459,7 +492,8 @@ const closeMarkupModal = () => {
 
 .page-title {
   font-size: 2.5rem;
-  color: #444444; /* Темно-серый текст */
+  color: #444444;
+  /* Темно-серый текст */
   margin-bottom: 20px;
 }
 
@@ -476,10 +510,12 @@ const closeMarkupModal = () => {
 
 /* Карточка проекта */
 .project-card {
-  background-color: #ffffff; /* Белый фон */
+  background-color: #ffffff;
+  /* Белый фон */
   border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Светлая тень */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  /* Светлая тень */
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -492,19 +528,22 @@ const closeMarkupModal = () => {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  color: #444444; /* Темно-серый текст */
+  color: #444444;
+  /* Темно-серый текст */
   gap: 20px;
 }
 
 /* Дата создания */
 .created-at {
   font-size: 0.9rem;
-  color: #888888; /* Средне-серый */
+  color: #888888;
+  /* Средне-серый */
 }
 
 /* Описание проекта */
 .project-description {
-  color: #444444; /* Темно-серый текст */
+  color: #444444;
+  /* Темно-серый текст */
   font-size: 1rem;
   line-height: 1.5;
   margin-bottom: 20px;
@@ -513,7 +552,8 @@ const closeMarkupModal = () => {
 /* Кнопки действий в карточке */
 .action-btn,
 .view-project-btn {
-  background-color: #444444; /* Темно-серый */
+  background-color: #444444;
+  /* Темно-серый */
   color: white;
   font-weight: bold;
   text-transform: uppercase;
@@ -532,7 +572,8 @@ const closeMarkupModal = () => {
 /* Анимация при наведении на кнопки */
 .action-btn:hover,
 .view-project-btn:hover {
-  background-color: #333333; /* Чуть темнее серый */
+  background-color: #333333;
+  /* Чуть темнее серый */
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
@@ -540,15 +581,19 @@ const closeMarkupModal = () => {
 /* Нижняя часть карточки с кнопками */
 .project-actions-bottom {
   display: flex;
-  justify-content: flex-end; /* Кнопки по центру или справа */
+  justify-content: flex-end;
+  /* Кнопки по центру или справа */
   gap: 10px;
-  margin-top: auto; /* Перемещение вниз карточки */
+  margin-top: auto;
+  /* Перемещение вниз карточки */
 }
 
 /* Модальные окна */
 .v-card-title {
-  background-color: #ffffff; /* Белый фон */
-  color: #444444 !important; /* Темно-серый текст */
+  background-color: #ffffff;
+  /* Белый фон */
+  color: #444444 !important;
+  /* Темно-серый текст */
   padding: 16px 24px;
 }
 
@@ -572,7 +617,8 @@ const closeMarkupModal = () => {
   max-height: 300px;
   overflow-y: auto;
   padding: 10px;
-  background: #ffffff; /* Белый фон */
+  background: #ffffff;
+  /* Белый фон */
   border-radius: 8px;
 }
 
@@ -581,40 +627,53 @@ const closeMarkupModal = () => {
   justify-content: space-between;
   align-items: center;
   padding: 10px;
-  background: #f9f9f9; /* Светло-серый фон */
+  background: #f9f9f9;
+  /* Светло-серый фон */
   border-radius: 6px;
-  color: #444444; /* Темно-серый текст */
+  color: #444444;
+  /* Темно-серый текст */
 }
 
 /* Кнопка "Выбрать" */
 /* Стиль для кнопки "Выбрать" */
 .choose-btn {
   margin-top: 20px;
-  background-color: #444444 !important; /* Темно-серый */
-  color: white !important; /* Белый текст */
+  background-color: #444444 !important;
+  /* Темно-серый */
+  color: white !important;
+  /* Белый текст */
   font-weight: bold;
-  text-transform: uppercase; /* Заглавные буквы */
+  text-transform: uppercase;
+  /* Заглавные буквы */
   padding: 10px 20px;
   border-radius: 8px;
 }
 
 .choose-btn:hover {
-  background-color: #333333 !important; /* Чуть темнее серый */
+  background-color: #333333 !important;
+  /* Чуть темнее серый */
 }
 
 .close-btn {
-  background-color: transparent !important; /* Убираем фон */
-  color: #444444; /* Темно-серый текст */
+  background-color: transparent !important;
+  /* Убираем фон */
+  color: #444444;
+  /* Темно-серый текст */
   font-size: 1rem;
   font-weight: bold;
-  text-transform: none; /* Отключаем заглавные буквы */
-  padding: 10; /* Убираем отступы */
-  min-width: auto; /* Убираем минимальную ширину */
-  margin-left: auto; /* Перемещаем кнопку вправо */
+  text-transform: none;
+  /* Отключаем заглавные буквы */
+  padding: 10;
+  /* Убираем отступы */
+  min-width: auto;
+  /* Убираем минимальную ширину */
+  margin-left: auto;
+  /* Перемещаем кнопку вправо */
 }
 
 .close-btn:hover {
-  color: #333333; /* Чуть темнее серый при наведении */
+  color: #333333;
+  /* Чуть темнее серый при наведении */
 }
 
 /* Список карточек версий разметки */
@@ -627,10 +686,12 @@ const closeMarkupModal = () => {
 
 /* Карточка версии разметки */
 .markup-card {
-  background-color: #ffffff; /* Белый фон */
+  background-color: #ffffff;
+  /* Белый фон */
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Легкая тень */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  /* Легкая тень */
   display: flex;
   flex-direction: column;
   gap: 15px;
@@ -642,13 +703,15 @@ const closeMarkupModal = () => {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  color: #444444; /* Темно-серый текст */
+  color: #444444;
+  /* Темно-серый текст */
 }
 
 
 /* Описание версии */
 .markup-description {
-  color: #444444; /* Темно-серый текст */
+  color: #444444;
+  /* Темно-серый текст */
   font-size: 1rem;
   line-height: 1.5;
   margin-bottom: 10px;

@@ -42,15 +42,7 @@ export default defineConfig({
 
   // Настройки сервера для разработки
   server: {
-    port: 5173, // Порт
-    open: true, // Автоматически открывать браузер
-    proxy: { // Прокси для API
-      '/api': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
-      },
-    },
+    host: '0.0.0.0'
   },
 
   // Настройки сборки
