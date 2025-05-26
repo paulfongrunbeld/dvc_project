@@ -18,6 +18,9 @@ function unpack_resp(response) {
     if (response.status === 200 && !response.body) {
         return true;
     }
+    if (response.status === 204 || !response.body) {
+        return null; // Возвращаем null для пустых ответов
+    }
     return response.json();
 }
 
@@ -79,14 +82,14 @@ class ImageAPI extends Caller {
         const formData = new FormData();
         formData.append('file', file);
 
-        return this.fetch(`/api/Images/upload?projectId=${projectId}`, {
+        return this.fetch(`/api/ImagesController/upload?projectId=${projectId}`, {
             method: 'POST',
             body: formData
         });
     }
 
     async saveMarkup(imageHash, markupJson, markupDescriptionUuid) {
-        return this.jpost('/api/Images/markup', {
+        return this.jpost('/api/ImagesController/markup', {
             ImageHash: imageHash,
             MarkupJson: markupJson,
             MarkupDescriptionUuid: markupDescriptionUuid
@@ -94,7 +97,7 @@ class ImageAPI extends Caller {
     }
 
     async getMarkups(imageUuid) {
-        return this.fetch(`/api/Images/markuplist/${imageUuid}`);
+        return this.fetch(`/api/ImagesController/markuplist/${imageUuid}`);
     }
 }
 

@@ -50,12 +50,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted,getCurrentInstance } from 'vue';
+
+const { proxy } = getCurrentInstance();
+const api = proxy.$api;
+const imageHash = ref(null);
 
 // Пропсы компонента
 const props = defineProps({
   projectId: String,
-  versionId: String,
+  markupDescriptionUuid: String, // Новый пропс для UUID описания разметки
   fields: {
     type: Array,
     default: () => []
@@ -115,15 +119,28 @@ const triggerFileInput = () => {
 /**
  * Обрабатывает загруженный файл изображения.
  */
-const onFileChange = (event) => {
+ const onFileChange = async (event) => {
   const file = event.target.files[0];
   if (!file) return;
+
   fileName.value = file.name;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    loadImage(e.target.result);
-  };
-  reader.readAsDataURL(file);
+
+  try {
+    // Загружаем изображение через API
+    const response = await api.image.uploadImage(file, props.projectId);
+    console.log(response)
+    imageHash.value = response.hash; // Сохраняем хэш из ответа
+
+    // Загружаем изображение на холст
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      loadImage(e.target.result);
+    };
+    reader.readAsDataURL(file);
+  } catch (error) {
+    console.error('Ошибка загрузки изображения:', error);
+    alert('Не удалось загрузить изображение');
+  }
 };
 
 /**
@@ -274,7 +291,12 @@ const handleMouseLeave = () => {
 /**
  * Отправляет данные о разметке.
  */
-const submitData = () => {
+ const submitData = async () => {
+  if (!imageHash.value) {
+    alert('Сначала загрузите изображение');
+    return;
+  }
+
   const dataToSend = {
     fileName: fileName.value,
     annotations: annotations.value.map((ann) => ({
@@ -285,8 +307,19 @@ const submitData = () => {
       y2: Math.round(ann.y + ann.height),
     })),
   };
-  console.log('Отправка данных:', dataToSend);
-  // Здесь можно добавить логику отправки данных на сервер
+
+  try {
+    const markupJson = JSON.stringify(dataToSend.annotations);
+    await api.image.saveMarkup(
+      imageHash.value,
+      markupJson,
+      props.markupDescriptionUuid
+    );
+    alert('Данные успешно отправлены');
+  } catch (error) {
+    console.error('Ошибка отправки разметки:', error);
+    alert('Не удалось отправить разметку');
+  }
 };
 
 // ===============================
