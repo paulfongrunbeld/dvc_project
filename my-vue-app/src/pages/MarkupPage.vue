@@ -310,15 +310,21 @@ const handleMouseLeave = () => {
 
   try {
     const markupJson = JSON.stringify(dataToSend.annotations);
-    await api.image.saveMarkup(
+    const response = await api.image.saveMarkup(
       imageHash.value,
       markupJson,
       props.markupDescriptionUuid
-    );
-    alert('Данные успешно отправлены');
+    ); 
+    console.log(response)
+
+    if (response && response.success) {
+      alert('Данные успешно отправлены');
+    } else {
+      throw new Error('Сервер вернул ошибку');
+    }
   } catch (error) {
     console.error('Ошибка отправки разметки:', error);
-    alert('Не удалось отправить разметку');
+    alert(`Не удалось отправить разметку: ${error.message}`);
   }
 };
 
