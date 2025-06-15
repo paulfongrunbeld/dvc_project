@@ -51,7 +51,9 @@
 
 <script setup>
 import { ref, onMounted,getCurrentInstance } from 'vue';
+import { useRoute } from 'vue-router';
 
+const route = useRoute();
 const { proxy } = getCurrentInstance();
 const api = proxy.$api;
 const imageHash = ref(null);
@@ -310,12 +312,13 @@ const handleMouseLeave = () => {
 
   try {
     const markupJson = JSON.stringify(dataToSend.annotations);
+    
+    // Используем versionId из URL вместо props.markupDescriptionUuid
     const response = await api.image.saveMarkup(
       imageHash.value,
       markupJson,
-      props.markupDescriptionUuid
-    ); 
-    console.log(response)
+      route.query.versionId // <- Получаем versionId из URL
+    );
 
     if (response && response.success) {
       alert('Данные успешно отправлены');

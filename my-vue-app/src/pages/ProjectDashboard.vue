@@ -149,9 +149,21 @@ const selectedMarkupVersion = ref(null);
 // В методе goToMarkup:
 const goToMarkup = async (version) => {
   try {
-    const markupDetails = await api.markupDescription.getMarkupDescriptionByUuid(version.id);
+    const markupDetails = await api.markupDescription.getMarkupDescriptionByUuid(version.uuid);
     selectedMarkupVersion.value = markupDetails;
-    currentMarkupFields.value = markupDetails.fields ? JSON.parse(markupDetails.fields) : [];
+
+    // Десериализация: если fields — JSON-строка, преобразуем в массив
+    if (typeof markupDetails.fields === 'string') {
+      try {
+        currentMarkupFields.value = JSON.parse(markupDetails.fields);
+      } catch (e) {
+        console.warn('Ошибка десериализации полей:', e);
+        currentMarkupFields.value = [];
+      }
+    } else {
+      currentMarkupFields.value = markupDetails.fields || [];
+    }
+
     showMarkupFieldsModal.value = true;
   } catch (err) {
     console.error('Ошибка загрузки разметки:', err);
@@ -172,22 +184,26 @@ const removeField = (index) => {
 
 const saveAndClose = async () => {
   try {
+    // Отправляем как массив строк
     await api.markupDescription.updateMarkupDescription(
-      selectedMarkupVersion.value.id,
+      selectedMarkupVersion.value.uuid,
       {
-        fields: JSON.stringify(currentMarkupFields.value)
+        name: selectedMarkupVersion.value.name,
+        description: selectedMarkupVersion.value.description,
+        fields: currentMarkupFields.value, // Отправляем как массив
+        projectUuid: selectedMarkupVersion.value.projectUuid
       }
     );
-    
+
     router.push({
       name: 'MarkupPage',
       query: {
         projectId: currentProjectId.value,
-        versionId: selectedMarkupVersion.value.id,
+        versionId: selectedMarkupVersion.value.uuid,
         fields: JSON.stringify(currentMarkupFields.value)
       }
     });
-    
+
     showMarkupFieldsModal.value = false;
   } catch (err) {
     console.error('Ошибка сохранения полей:', err);
@@ -217,15 +233,17 @@ const createOrUpdateMarkup = async () => {
   try {
     if (editingMarkup.value) {
       // Обновление существующей разметки
+      сonsole.log(editingMarkup.value)
       const updated = await api.markupDescription.updateMarkupDescription(
-        editingMarkup.value.id,
+        editingMarkup.value.uuid,
         {
           name: newMarkup.value.name,
           description: newMarkup.value.description,
-          fields: JSON.stringify(currentMarkupFields.value)
+          fields: currentMarkupFields.value, // Отправляем как массив
+          projectUuid: editingMarkup.value.projectUuid
         }
       );
-      
+
       if (updated) {
         await loadMarkupDescriptions(currentProjectId.value);
       }
@@ -234,21 +252,24 @@ const createOrUpdateMarkup = async () => {
       const newMarkupDesc = await api.markupDescription.createEmptyMarkupDescription(
         currentProjectId.value
       );
-      
+      console.log(newMarkupDesc)
       if (newMarkupDesc?.uuid) {
-        await api.markupDescription.updateMarkupDescription(
+        const created = await api.markupDescription.updateMarkupDescription(
           newMarkupDesc.uuid,
           {
             name: newMarkup.value.name,
             description: newMarkup.value.description,
-            fields: JSON.stringify(currentMarkupFields.value)
+            fields: currentMarkupFields.value, // Отправляем как массив
+            projectUuid: newMarkupDesc.projectUuid
           }
         );
-        
-        await loadMarkupDescriptions(currentProjectId.value);
+
+        if (created) {
+          await loadMarkupDescriptions(currentProjectId.value);
+        }
       }
     }
-    
+
     closeCreateMarkupModal();
   } catch (err) {
     console.error('Ошибка сохранения разметки:', err);
@@ -274,21 +295,24 @@ const loadProjects = async () => {
 };
 
 const deleteProject = async (uuid) => {
-  console.log("delete uuid")
-  console.log(uuid)
   try {
     const project = projects.value.find(p => p.uuid === uuid);
     if (!project) return;
 
-    const updated = await api.project.updateProject(uuid, {
-      ...project,
+    const fullProjectData = {
+      Uuid: project.uuid,
+      Name: project.name,
+      Description: project.description,
+      CreatedAt: project.createdAt || new Date().toISOString(),
       Removed: true
-    });
+    };
 
-    if (updated?.success) {
+    const result = await api.project.updateProject(uuid, fullProjectData);
+    
+    if (result?.success) {
       projects.value = projects.value.filter(p => p.uuid !== uuid);
     }
-    loadProjects()
+    loadProjects();
   } catch (error) {
     console.error('Ошибка удаления проекта:', error);
   }

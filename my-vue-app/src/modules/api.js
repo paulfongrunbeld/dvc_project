@@ -88,6 +88,10 @@ class ImageAPI extends Caller {
         });
     }
 
+    async fetchImages(page, pageSize = 10) {
+        return this.fetch(`/api/ImagesController/getimages?page=${page}&pageSize=${pageSize}`);
+    }
+
     async saveMarkup(imageHash, markupJson, markupDescriptionUuid) {
         return this.jpost('/api/ImagesController/markup', {
             ImageHash: imageHash,

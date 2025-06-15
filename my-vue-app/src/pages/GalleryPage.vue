@@ -1,127 +1,87 @@
 <template>
-    <v-container class="gallery-page">
-      <!-- Заголовок -->
-      <h1 class="page-title">Галерея</h1>
-  
-      <!-- Список изображений -->
-      <div class="gallery-grid">
-        <div
-          v-for="(image, index) in images"
-          :key="index"
-          class="gallery-item"
-          @click="openVersionsModal(image)"
-        >
-          <img :src="image.src" alt="Изображение" class="gallery-image" />
-          <p class="image-caption">{{ image.caption }}</p>
-        </div>
+  <v-container class="gallery-page">
+    <!-- Заголовок -->
+    <h1 class="page-title">Галерея</h1>
+
+    <!-- Сетка изображений -->
+    <div class="gallery-grid">
+      <div
+        v-for="(image, index) in images"
+        :key="index"
+        class="gallery-item"
+        @click="openVersionsModal(image)"
+      >
+        <img
+          :src="`data:image/jpeg;base64,${getbase64(image)}`"
+          alt="Изображение"
+          class="gallery-image"
+        />
+        <p class="image-caption">Изображение {{ image.uuid }}</p>
       </div>
+    </div>
+
+    <!-- Пагинация -->
+    <div class="pagination">
+      <v-btn :disabled="currentPage === 1" @click="prevPage()">Предыдущая</v-btn>
+      <span>Страница {{ currentPage }} из {{ totalPages }}</span>
+      <v-btn
+        :disabled="currentPage === totalPages"
+        @click="nextPage()"
+      >Следующая</v-btn>
+    </div>
+  </v-container>
+</template>
   
-      <!-- Модальное окно для версий -->
-      <v-dialog v-model="showVersionsModal" max-width="800">
-        <v-card>
-          <v-card-title class="d-flex justify-space-between align-center">
-            <span>Аннотированные версии</span>
-            <v-btn class="close-btn" @click="closeVersionsModal">Закрыть</v-btn>
-          </v-card-title>
-          <v-card-text>
-            <div v-if="currentImage">
-              <h3>{{ currentImage.caption }}</h3>
-              <div class="versions-list">
-                <div
-                  v-for="(version, index) in currentImage.versions"
-                  :key="index"
-                  class="version-item"
-                >
-                  <img
-                    :src="version.src"
-                    alt="Аннотированная версия"
-                    class="version-image"
-                    @click="openZoomModal(version.src)"
-                  />
-                  <p class="version-caption">{{ version.caption }}</p>
-                  <v-btn class="delete-btn" @click="deleteVersion(index)">Удалить</v-btn>
-                </div>
-              </div>
-            </div>
-          </v-card-text>
-        </v-card>
-      </v-dialog>
-  
-      <!-- Модальное окно для увеличенного просмотра -->
-      <v-dialog v-model="showZoomModal" max-width="90%">
-        <v-card>
-          <v-card-title class="d-flex justify-end">
-            <v-btn class="close-btn" @click="closeZoomModal">Закрыть</v-btn>
-          </v-card-title>
-          <v-card-text>
-            <img :src="zoomedImageSrc" alt="Увеличенное изображение" class="zoomed-image" />
-          </v-card-text>
-        </v-card>
-      </v-dialog>
-    </v-container>
-  </template>
-  
-  <script setup>
-  import { ref } from 'vue';
-  
-  // Пример данных для галереи
-  const images = ref([
-    {
-      src: 'https://via.placeholder.com/300',
-      caption: 'Изображение 1',
-      versions: [
-        { src: 'https://via.placeholder.com/300/FF5733', caption: 'Версия 1' },
-        { src: 'https://via.placeholder.com/300/C70039', caption: 'Версия 2' },
-      ],
-    },
-    {
-      src: 'https://via.placeholder.com/300',
-      caption: 'Изображение 2',
-      versions: [
-        { src: 'https://via.placeholder.com/300/FFC300', caption: 'Версия 1' },
-      ],
-    },
-  ]);
-  
-  // Состояния для модального окна версий
-  const showVersionsModal = ref(false);
-  const currentImage = ref(null);
-  
-  // Состояния для модального окна увеличенного просмотра
-  const showZoomModal = ref(false);
-  const zoomedImageSrc = ref('');
-  
-  // Открытие модального окна с версиями
-  const openVersionsModal = (image) => {
-    currentImage.value = image;
-    showVersionsModal.value = true;
-  };
-  
-  // Закрытие модального окна версий
-  const closeVersionsModal = () => {
-    currentImage.value = null;
-    showVersionsModal.value = false;
-  };
-  
-  // Удаление версии
-  const deleteVersion = (index) => {
-    if (currentImage.value && currentImage.value.versions) {
-      currentImage.value.versions.splice(index, 1);
-    }
-  };
-  
-  // Открытие модального окна увеличенного просмотра
-  const openZoomModal = (src) => {
-    zoomedImageSrc.value = src;
-    showZoomModal.value = true;
-  };
-  
-  // Закрытие модального окна увеличенного просмотра
-  const closeZoomModal = () => {
-    zoomedImageSrc.value = '';
-    showZoomModal.value = false;
-  };
-  </script>
+<script setup>
+import { ref, onMounted, getCurrentInstance } from 'vue';
+
+
+// Инициализация API (замените на актуальные значения)
+const { proxy } = getCurrentInstance();
+const api = proxy.$api;
+const cookies = {}; // Если требуется аутентификация через cookies
+
+const images = ref([]);
+const currentPage = ref(1);
+const totalPages = ref(1);
+const pageSize = 10;
+
+function getbase64(image) {
+  console.log(image)
+  return image.base64
+}
+
+// Загрузка изображений через ImageAPI
+const fetchImages = async (page) => {
+  try {
+    const response = await api.image.fetchImages(page, pageSize);
+    images.value = response.items
+    totalPages.value = Math.ceil(response.totalCount / response.pageSize);
+  } catch (error) {
+    console.error('Ошибка загрузки изображений:', error);
+  }
+};
+
+// Переключение страниц
+const prevPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value--;
+    fetchImages(currentPage.value);
+  }
+};
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++;
+    fetchImages(currentPage.value);
+  }
+};
+
+// Инициализация
+onMounted(() => {
+  fetchImages(currentPage.value);
+});
+</script>
   
   <style scoped>
   /* Градиентный фон страницы */
