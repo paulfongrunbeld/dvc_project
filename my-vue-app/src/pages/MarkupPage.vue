@@ -294,11 +294,31 @@ const handleMouseLeave = () => {
  * Отправляет данные о разметке.
  */
  const submitData = async () => {
-  if (!imageHash.value) {
+  if (!imageHash.value || !img.value) {
     alert('Сначала загрузите изображение');
     return;
   }
 
+  // 1. Создаем квадратное изображение (500x500)
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = 500;
+  tempCanvas.height = 500;
+  const ctx = tempCanvas.getContext('2d');
+  
+  // Заливаем черным фоном
+  ctx.fillStyle = 'black';
+  ctx.fillRect(0, 0, 500, 500);
+  
+  // Масштабируем изображение
+  const scale = Math.min(500 / img.value.width, 500 / img.value.height);
+  const width = img.value.width * scale;
+  const height = img.value.height * scale;
+  ctx.drawImage(img.value, 0, 0, width, height); // Прижимаем к левому верхнему углу
+  
+  // Получаем base64 квадратного изображения
+  const learningImageBase64 = tempCanvas.toDataURL('image/png');
+
+  // 2. Формируем данные разметки
   const dataToSend = {
     fileName: fileName.value,
     annotations: annotations.value.map((ann) => ({
@@ -310,17 +330,18 @@ const handleMouseLeave = () => {
     })),
   };
 
+  const markupJson = JSON.stringify(dataToSend.annotations);
+
   try {
-    const markupJson = JSON.stringify(dataToSend.annotations);
-    
-    // Используем versionId из URL вместо props.markupDescriptionUuid
+    // 3. Отправляем разметку с квадратным изображением
     const response = await api.image.saveMarkup(
       imageHash.value,
       markupJson,
-      route.query.versionId // <- Получаем versionId из URL
+      route.query.versionId, // Используем versionId из URL
+      learningImageBase64 // Передаем квадратное изображение
     );
-
-    if (response && response.success) {
+    
+    if (response?.success) {
       alert('Данные успешно отправлены');
     } else {
       throw new Error('Сервер вернул ошибку');

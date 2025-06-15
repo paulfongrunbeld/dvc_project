@@ -92,13 +92,14 @@ class ImageAPI extends Caller {
         return this.fetch(`/api/ImagesController/getimages?page=${page}&pageSize=${pageSize}`);
     }
 
-    async saveMarkup(imageHash, markupJson, markupDescriptionUuid) {
+    async saveMarkup(imageHash, markupJson, markupDescriptionUuid, learningImage) {
         return this.jpost('/api/ImagesController/markup', {
-            ImageHash: imageHash,
-            MarkupJson: markupJson,
-            MarkupDescriptionUuid: markupDescriptionUuid
+          ImageHash: imageHash,
+          MarkupJson: markupJson,
+          MarkupDescriptionUuid: markupDescriptionUuid,
+          LearningImage: learningImage // Новое поле
         });
-    }
+      }
 
     async getMarkups(imageUuid) {
         return this.fetch(`/api/ImagesController/markuplist/${imageUuid}`);
